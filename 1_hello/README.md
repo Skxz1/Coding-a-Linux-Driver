@@ -1,197 +1,104 @@
-# 01_hello — My First Linux Kernel Module 🧠🐧
+01_hello
+A simple Hello World Linux Kernel Module created as part of my Linux driver learning journey.
 
-A simple **Hello World Linux Kernel Module** created as part of my Linux driver learning journey.
+This example can be compiled and run on a normal x86 Ubuntu machine or on embedded Linux (e.g. Raspberry Pi) as long as kernel headers are installed.
 
-This example can be compiled and run on a normal **x86 Ubuntu machine** or on **embedded Linux (e.g. Raspberry Pi)** — as long as kernel headers are installed.
+What this project is about
+--------------------------
+This is my first Loadable Kernel Module (LKM). The goal is to understand how code can be loaded into the Linux kernel at runtime and removed again — safely — while also learning how printk + dmesg logging works.
 
----
+Unlike normal programs which run in user space, a kernel module runs inside the kernel. This means it has full control and no protection if something goes wrong — which is why this work is always done inside a VM.
 
-## 🎯 What this project is about
+The Hello World Kernel Module
+-----------------------------
+Two events matter for a kernel module:
 
-This is my **first Loadable Kernel Module (LKM)**.  
-The goal is to understand:
+1. when it is loaded into the kernel
+2. when it is unloaded from the kernel
 
-✔ how code can be loaded into the Linux kernel at runtime  
-✔ how it can be safely removed again  
-✔ how kernel logging works using `printk()` / `pr_info()`  
-✔ how to use `dmesg` to view kernel output  
+We register functions for these events using the macros:
 
-Unlike normal programs that run in **user space**, a kernel module runs in **kernel space**.  
-That means:
+module_init()
+module_exit()
 
-⚠ it has full control  
-⚠ there is no protection if something goes wrong  
-⚠ testing should *always* be done in a VM  
+The function called when the module is loaded normally looks like this:
 
-Which is exactly what I’m doing 🙂
+int my_init(void)
 
----
+It returns an int. Returning 0 means the module was loaded successfully. Returning a negative value signals that initialization failed.
 
-## 🧩 The Hello World Kernel Module — in simple terms
+The function called when the module is removed looks like this:
 
-Linux kernel modules define **two key functions**:
+void my_exit(void)
 
-### 🔹 When the module loads
-```c
-int hello_init(void)
-```
+This function has no arguments and no return value. Its job is to clean up anything allocated during initialization.
 
-Returning `0` = success.  
-Returning `< 0` = error during load.
+Inside both functions we use printk (or pr_info). printk works like printf, except it prints to the kernel log rather than the terminal.
 
----
+To declare the module license we use:
 
-### 🔹 When the module unloads
-```c
-void hello_exit(void)
-```
-
-Used to clean up anything allocated during init.
-
----
-
-### 🖨 Logging from the kernel
-
-Kernel modules **don’t use `printf()`**.  
-Instead they use:
-
-```c
-printk()
-```
-
-(or helpers like `pr_info()`)
-
-These messages appear in the **kernel log**, which we read using:
-
-```
-dmesg
-```
-
----
-
-### 📜 Declaring the module license
-
-```c
 MODULE_LICENSE("GPL");
-```
 
-This declares the module as **open-source GPL licensed**, which avoids kernel warnings and allows the module to load on systems that block proprietary drivers.
+This tells the kernel that the module is open-source licensed, which avoids warnings and is required by some Linux distributions.
 
----
+Makefile for building the module
+--------------------------------
+Kernel modules are built using the kernel build system. Our Makefile declares the object to build and then calls into the kernel's build environment.
 
-## 🏗 Building the module
+The module object is declared like this:
 
-The build process uses the Linux kernel build system.
-
-The Makefile includes:
-
-```make
 obj-m += hello.o
-```
 
-Then we call the kernel build environment inside:
+Then `make` calls the kernel build system in:
 
-```
 /lib/modules/$(uname -r)/build
-```
 
-Running:
+which compiles hello.c into hello.o and then hello.ko (the actual kernel module).
 
-```
+Commands to manage the module
+-----------------------------
+
+Build the module:
 make
-```
 
-produces:
-
-✔ `hello.ko` — the actual kernel module
-
----
-
-## ▶ Running the module
-
-### 📡 Follow kernel logs live
-```bash
+Follow the kernel log in real time:
 sudo dmesg -w
-```
 
----
-
-### ➕ Insert the module
-```bash
+Insert the module:
 sudo insmod hello.ko
-```
 
-You should see a log message appear 🎉
-
----
-
-### ➖ Remove the module
-```bash
+Remove the module:
 sudo rmmod hello
-```
 
-Another log message confirms unload.
-
----
-
-### 🔍 View recent logs
-```bash
+View the most recent kernel log lines:
 dmesg | tail -20
-```
 
----
+What I learned from this
+------------------------
+• Difference between kernel space and user space  
+• How kernel modules are built using Makefiles  
+• How printk sends messages to the kernel log  
+• How to use dmesg -w to stream kernel messages  
+• How to safely load and unload modules  
+• Why build files should be ignored using .gitignore  
 
-## 📁 Repository structure
+Repository structure
+--------------------
+Only source code is tracked:
 
-```
-1_hello/
- ├── hello.c        # Kernel module source
- ├── Makefile       # Build instructions
-```
+hello.c
+Makefile
 
-Build files like `.ko`, `.o`, `.mod.*` are ignored using `.gitignore`.
+Build artifacts such as .ko, .o, .mod.* etc are excluded via .gitignore.
 
----
+Next steps
+----------
+This is Phase 1 of my embedded Linux driver project.
 
-## 🧠 What I learned so far
+Next I will:
+• create a character device driver  
+• expose /dev/mydevice  
+• implement read and write handling  
+• continue learning and documenting the process  
 
-✔ Kernel space vs user space  
-✔ How Loadable Kernel Modules work  
-✔ How to build kernel modules using Makefiles  
-✔ Using `printk()` + `dmesg` for debugging  
-✔ Safely loading/unloading modules  
-✔ Why `.gitignore` should exclude build outputs  
-
----
-
-## 🚧 Safety First
-
-Kernel bugs can:
-
-❌ freeze your system  
-❌ cause panics  
-❌ corrupt memory  
-
-So this project is always tested inside a **virtual machine**.
-
----
-
-## 🚀 Next Steps
-
-This project is **Phase 1** of my Linux driver learning path.
-
-Next goals:
-
-🔜 build a **character device driver**  
-🔜 create `/dev/mydevice`  
-🔜 implement read/write  
-🔜 explore IOCTL + blocking I/O  
-
-And of course… keep documenting everything 📓  
-
----
-
-### ⭐ Personal Note
-
-This repo exists so I can **learn by doing — not copying blindly.**  
-Progress over perfection 🙂
+This README and project evolve as I learn — which is exactly the point 🙂
