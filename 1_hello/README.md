@@ -101,4 +101,4 @@ Next I will:
 • implement read and write handling  
 • continue learning and documenting the process  
 
-This README and project evolve as I learn — which is exactly the point 🙂
+
