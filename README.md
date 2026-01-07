@@ -1,152 +1,138 @@
-# Embedded Linux Driver Development — Learning Project
+# 🧠 Embedded Linux Driver Learning Journey
 
-This repository tracks my journey into **Linux kernel and device driver development**, starting from a simple “Hello World” Loadable Kernel Module (LKM) and progressing toward real character-device drivers and kernel-space/user-space communication.
+A structured, hands-on project where I learn **Linux kernel development** by building real drivers step-by-step — starting from a simple `hello.ko` and progressing to a fully-functioning **character device under `/dev/`**.
 
-The focus of this project is not only to build working drivers, but to understand **how and why** they work — documenting key lessons along the way.
-
----
-
-## 🎯 Goals
-
-Through this project I aim to develop:
-
-- a practical understanding of **Linux kernel internals**
-- confidence writing and debugging **kernel modules**
-- experience working safely inside **kernel space**
-- knowledge of **device file interfaces (/dev/)** 
-- professional engineering habits such as:
-  - incremental development
-  - testing in VMs
-  - clear documentation
-  - clean Git history & repo structure
+This project is built inside a **safe Ubuntu Virtual Machine** so I can experiment without risking my host system.
 
 ---
 
-## 🧭 Roadmap
+## 🎯 Project Outcome
 
-### ✅ Phase 1 — Hello World Kernel Module (`1_hello/`)
-- Implements `module_init()` and `module_exit()`
-- Logs messages with `printk()` / `pr_info()`
-- Built using kernel build system + Makefile
-- Loaded via `insmod`, removed via `rmmod`
-- Debug output viewed using `dmesg`
-
-📄 Documented in: `1_hello/README.md`
+✔ Understand **how Linux kernel modules work**  
+✔ Create a **real character device driver (/dev/mydevice)**  
+✔ Safely pass data between **user-space & kernel-space**  
+✔ Learn debugging & kernel development workflow  
+✔ Publish clean, professional code & documentation  
 
 ---
 
-### 🟡 Phase 2 — Character Device Driver
-Planned:
-- Register `/dev/mydevice`
-- Implement `open`, `release`, `read`, `write`
-- Exchange data between kernel & user space
-- Provide test program
+## 🗂 Repository Structure
 
----
-
-### 🟡 Phase 3 — Real-World Behaviour & Safety
-Planned:
-- Internal buffering
-- IOCTL control paths
-- Blocking I/O
-- Concurrency + locking
-- Multiple process interaction
-
----
-
-### 🟡 Phase 4 — Extensions (Optional)
-Possible exploration:
-- sysfs attributes
-- debug flags
-- virtual interrupts
-- embedded Linux / Raspberry Pi support
-
----
-
-## 🛠 Tools & Environment
-
-- Ubuntu Linux (inside VirtualBox VM)
-- GCC / `make`
-- Linux kernel headers
-- `insmod`, `rmmod`, `lsmod`, `dmesg`
-- Git + GitHub
-
-All development is performed inside a **virtual machine** to avoid host system instability — since kernel-space bugs can crash the OS.
-
----
-
-## 📂 Repository Structure
+Each folder is a small focused milestone:
 
 ```
-.
-├── 1_hello/            # First kernel module
-│   ├── hello.c
-│   ├── Makefile
-│   └── README.md
-├── .gitignore          # excludes kernel build artefacts
-└── README.md           # project overview (this file)
+1_hello/                 First Loadable Kernel Module (Hello World)
+2_simple_char_device/    Register a device & create /dev entry
+3_char_device_rw/        Implement read() & write()
+4_ring_buffer_driver/    Add internal buffering
+5_thread_safe_driver/    Add locking & concurrency safety
+6_ioctl_control_driver/  Add IOCTL control interface
+7_sysfs_and_debug/       Expose config via sysfs + debugging
+8_blocking_driver/       Implement blocking I/O & wait queues
+9_interrupt_sim/         Simulated interrupt-driven behavior
+10_rpi_driver/           Optional: run on Raspberry Pi hardware
 ```
 
-Common kernel build outputs (e.g., `.ko`, `.o`, `.mod.*`) are intentionally **not tracked** in Git.
+I update each folder with:
+
+📝 README.md explaining the *concepts*  
+💻 Source code  
+🧪 Testing notes  
+🐛 Issues & debugging log  
 
 ---
 
-## ▶ Building & Running Modules
+## ✅ Completed So Far – Phase 1
 
-Example (inside a module directory):
+### `1_hello/` — My First Linux Kernel Module 🎉
 
-```bash
-make
+This module prints to the kernel log when:
+
+✔ it is **inserted** (`init` function)  
+✔ it is **removed** (`exit` function)  
+
+This taught me:
+
+- what a **Loadable Kernel Module (LKM)** is  
+- how kernel vs user-space differ  
+- how to build `.ko` files with a Makefile  
+- how to use:
+
+```
 sudo insmod module.ko
-sudo dmesg -w     # view kernel logs
 sudo rmmod module
+sudo dmesg
 ```
 
----
-
-## 🧠 Learning Highlights So Far
-
-- Kernel space vs user space
-- How Loadable Kernel Modules work
-- How the kernel build system compiles modules
-- Using `printk()` and `dmesg` for debugging
-- Best practices for ignoring build artefacts
-- Working safely inside a VM
-- Handling GitHub repos for systems projects
+This was my **“hello world from kernel-space”** milestone 🧠
 
 ---
 
-## 🛡 Safety Notes
+## 🚀 Current Work — Phase 2
 
-Kernel code executes with **full system privilege**.  
-Bugs can:
+### `2_simple_char_device/`
 
-- freeze the system
-- panic the kernel
-- corrupt memory
+Goal:
 
-Therefore:
+> Create a **minimal character device driver** that appears under `/dev/`
 
-✔ always develop inside a VM  
-✔ make small, incremental changes  
-✔ test carefully  
-✔ avoid copying code blindly  
+I will learn:
 
----
+- major & minor device numbers
+- registering a `cdev`
+- wiring file operations
+- how `/dev` works internally
 
-## 📌 Status
+Once complete:
 
-| Phase | Description | Status |
-|------|-------------|--------|
-| 1 | Hello World kernel module | ✅ Complete |
-| 2 | Character device driver | 🟡 In progress |
-| 3 | Advanced behaviour | ⏳ Planned |
-| 4 | Extensions | ⏳ Planned |
+✔ `/dev/mydevice` will exist  
+✔ I will be able to **open the device from user-space**
+
+(Then later phases will add read/write, buffers, IOCTL, threads, etc.)
 
 ---
 
-## 💬 About This Repo
+## 🛠 Tools Used
 
-This project reflects a **learn-by-doing approach** — understanding each layer before moving on. The intent is to build lasting intuition rather than just compiling working code.
+- Ubuntu Linux (inside VM)
+- GCC + Make
+- Linux kernel headers
+- VirtualBox
+- Git & GitHub
+- `dmesg`, `insmod`, `rmmod`, `lsmod`
 
-Feedback, discussion, and suggestions are always welcome 🙂
+---
+
+## 🧪 Testing Philosophy
+
+Every module must:
+
+✔ load without warnings  
+✔ log clearly to dmesg  
+✔ unload cleanly  
+✔ handle invalid input safely  
+✔ avoid kernel crashes (panic)  
+✔ document behaviour + lessons learned  
+
+---
+
+## ⭐ Final Goal
+
+By the end of this project I want to confidently say:
+
+> “I can design, build and debug Linux kernel drivers.”
+
+And my repo should reflect:
+
+✔ clean code  
+✔ strong understanding  
+✔ engineering discipline  
+✔ progression over time  
+
+---
+
+### 🧠 Why I’m Doing This
+
+Because Linux runs the world — and understanding the kernel means understanding **how computers really work.**
+
+And it’s fun 😎
