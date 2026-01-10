@@ -1,138 +1,168 @@
 # 🧠 Embedded Linux Driver Learning Journey
 
-A structured, hands-on project where I learn **Linux kernel development** by building real drivers step-by-step — starting from a simple `hello.ko` and progressing to a fully-functioning **character device under `/dev/`**.
+A structured, hands-on project where I learn Linux kernel development by
+building real drivers step-by-step — starting from a simple hello.ko and
+progressing toward fully-featured character device drivers under /dev/.
 
-This project is built inside a **safe Ubuntu Virtual Machine** so I can experiment without risking my host system.
+All development is done inside a safe Ubuntu Virtual Machine, allowing
+experimentation with kernel code without risking the host system.
 
----
+====================================================================
 
-## 🎯 Project Outcome
+PROJECT OUTCOME
 
-✔ Understand **how Linux kernel modules work**  
-✔ Create a **real character device driver (/dev/mydevice)**  
-✔ Safely pass data between **user-space & kernel-space**  
-✔ Learn debugging & kernel development workflow  
-✔ Publish clean, professional code & documentation  
+By the end of this project, I aim to:
 
----
+- Understand how Linux kernel modules work internally
+- Design and implement real character device drivers
+- Safely bridge user-space and kernel-space communication
+- Debug kernel code using proper tooling and workflow
+- Maintain a clean, professional, well-documented codebase
 
-## 🗂 Repository Structure
+This repository documents both the technical implementation and the learning
+process behind each phase.
 
-Each folder is a small focused milestone:
+====================================================================
 
-```
-1_hello/                 First Loadable Kernel Module (Hello World)
-2_simple_char_device/    Register a device & create /dev entry
-3_char_device_rw/        Implement read() & write()
-4_ring_buffer_driver/    Add internal buffering
-5_thread_safe_driver/    Add locking & concurrency safety
-6_ioctl_control_driver/  Add IOCTL control interface
-7_sysfs_and_debug/       Expose config via sysfs + debugging
-8_blocking_driver/       Implement blocking I/O & wait queues
-9_interrupt_sim/         Simulated interrupt-driven behavior
-10_rpi_driver/           Optional: run on Raspberry Pi hardware
-```
+REPOSITORY STRUCTURE
 
-I update each folder with:
+Each folder represents a focused milestone (phase) in the journey:
 
-📝 README.md explaining the *concepts*  
-💻 Source code  
-🧪 Testing notes  
-🐛 Issues & debugging log  
+    1_hello/                 First Loadable Kernel Module (Hello World)
+    2_simple_char_device/    Register a character device & VFS integration
+    3_char_device_rw/        Implement real read() & write()
+    4_ring_buffer_driver/    Add internal buffering
+    5_thread_safe_driver/    Add locking & concurrency safety
+    6_ioctl_control_driver/  Add IOCTL control interface
+    7_sysfs_and_debug/       Expose config via sysfs + debugging
+    8_blocking_driver/       Implement blocking I/O & wait queues
+    9_interrupt_sim/         Simulated interrupt-driven behavior
+    10_rpi_driver/           Optional: run on Raspberry Pi hardware
 
----
+Each phase folder contains:
 
-## ✅ Completed So Far – Phase 1
+- C source code
+- Makefile for kernel module builds
+- README.md explaining the phase goals and implementation
+- DOCUMENT.md capturing the learning process and challenges
 
-### `1_hello/` — My First Linux Kernel Module 🎉
+====================================================================
 
-This module prints to the kernel log when:
+COMPLETED PHASES
 
-✔ it is **inserted** (`init` function)  
-✔ it is **removed** (`exit` function)  
+--------------------------------------------------------------------
+PHASE 1 — 1_hello/
+MY FIRST LINUX KERNEL MODULE
 
-This taught me:
+This phase introduced a minimal Loadable Kernel Module (LKM) that logs
+messages when it is inserted into and removed from the kernel.
 
-- what a **Loadable Kernel Module (LKM)** is  
-- how kernel vs user-space differ  
-- how to build `.ko` files with a Makefile  
-- how to use:
+What was learned:
 
-```
-sudo insmod module.ko
-sudo rmmod module
-sudo dmesg
-```
+- What a kernel module is and how it differs from user-space programs
+- Kernel-space vs user-space execution
+- How to build .ko files using the kernel build system
+- Basic kernel logging using printk / pr_info
+- Core workflow using:
+      insmod
+      rmmod
+      dmesg
 
-This was my **“hello world from kernel-space”** milestone 🧠
+This phase served as a safe introduction to kernel-space development.
 
----
+--------------------------------------------------------------------
+PHASE 2 — 2_simple_char_device/
+MINIMAL CHARACTER DEVICE WITH VFS INTEGRATION
 
-## 🚀 Current Work — Phase 2
+This phase implemented a real character device driver that registers with
+the kernel and is accessible from user space via /dev/mydevice.
 
-### `2_simple_char_device/`
+What was implemented:
 
-Goal:
+- Dynamic allocation of major and minor device numbers
+- Registration of a character device using cdev
+- Wiring of open(), read(), and release() callbacks
+- Manual creation of /dev/mydevice using mknod
+- Minimal EOF-based read() implementation
+- Kernel logging with filtered debugging via dmesg
 
-> Create a **minimal character device driver** that appears under `/dev/`
+What was learned:
 
-I will learn:
+- How the kernel identifies devices using major/minor numbers
+- How /dev acts as a user-space abstraction over kernel device numbers
+- How the Virtual File System (VFS) routes system calls to drivers
+- Why read() returning 0 signals End-Of-File (EOF)
+- How tools like cat interact with character devices
+- How to debug kernel code methodically using logs
 
-- major & minor device numbers
-- registering a `cdev`
-- wiring file operations
-- how `/dev` works internally
+Phase 2 established the complete control path:
 
-Once complete:
+    user program → VFS → device number → driver callbacks
 
-✔ `/dev/mydevice` will exist  
-✔ I will be able to **open the device from user-space**
+====================================================================
 
-(Then later phases will add read/write, buffers, IOCTL, threads, etc.)
+CURRENT FOCUS / NEXT PHASE
 
----
+PHASE 3 — 3_char_device_rw/
+REAL DATA TRANSFER
 
-## 🛠 Tools Used
+The next phase will introduce:
 
-- Ubuntu Linux (inside VM)
-- GCC + Make
+- Internal kernel buffers
+- write() support (user → kernel)
+- read() returning real data (kernel → user)
+- copy_to_user() and copy_from_user()
+- Basic error handling and state management
+
+This phase will transition the driver from control-only to data-capable.
+
+====================================================================
+
+TOOLS USED
+
+- Ubuntu Linux (Virtual Machine)
+- GCC and Make
 - Linux kernel headers
 - VirtualBox
-- Git & GitHub
-- `dmesg`, `insmod`, `rmmod`, `lsmod`
+- Git and GitHub
+- Kernel tools: dmesg, insmod, rmmod, lsmod
 
----
+====================================================================
 
-## 🧪 Testing Philosophy
+TESTING AND DEVELOPMENT PHILOSOPHY
 
-Every module must:
+Every phase must:
 
-✔ load without warnings  
-✔ log clearly to dmesg  
-✔ unload cleanly  
-✔ handle invalid input safely  
-✔ avoid kernel crashes (panic)  
-✔ document behaviour + lessons learned  
+- Build cleanly
+- Load and unload without warnings
+- Log clearly and consistently
+- Fail safely when misused
+- Avoid kernel crashes or undefined behavior
+- Document both implementation and learning
 
----
+The emphasis is on understanding, not just making something work.
 
-## ⭐ Final Goal
+====================================================================
 
-By the end of this project I want to confidently say:
+FINAL GOAL
 
-> “I can design, build and debug Linux kernel drivers.”
+By the end of this project, I want to confidently say:
 
-And my repo should reflect:
+“I understand how Linux kernel drivers are designed, implemented, and debugged.”
 
-✔ clean code  
-✔ strong understanding  
-✔ engineering discipline  
-✔ progression over time  
+And this repository should demonstrate:
 
----
+- Real kernel code
+- Incremental progression
+- Strong mental models
+- Engineering discipline
+- Clear documentation
 
-### 🧠 Why I’m Doing This
+====================================================================
 
-Because Linux runs the world — and understanding the kernel means understanding **how computers really work.**
+WHY I’M DOING THIS
 
-And it’s fun 😎
+Linux runs critical infrastructure everywhere.
+Understanding the kernel means understanding how computers actually work.
+
+And it’s fun.
